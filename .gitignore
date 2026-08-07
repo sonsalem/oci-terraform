@@ -1,0 +1,46 @@
+# Local .terraform directories — downloaded provider binaries, hundreds of MB.
+# Recreated by `terraform init`, never commit.
+**/.terraform/*
+
+# State files — record what Terraform actually built in your cloud account.
+# Contain resource attributes and can hold secrets in plaintext.
+*.tfstate
+*.tfstate.*
+
+# Crash logs written when Terraform panics.
+crash.log
+crash.*.log
+
+# Variable files with your real values (OCIDs, key paths, tenancy details).
+# terraform.tfvars.example IS committed as a template — that one is excluded below.
+*.tfvars
+*.tfvars.json
+!terraform.tfvars.example
+
+# Terraform CLI config that may contain credentials or registry tokens.
+.terraformrc
+terraform.rc
+
+# Saved plan files — a plan can embed sensitive variable values.
+*.tfplan
+*.tfplan.*
+
+# Override files, used for local-only experiments.
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# SSH and OCI API keys — should never live in the repo, but guard against a stray copy.
+*.pem
+*.key
+id_rsa*
+*.pub
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
