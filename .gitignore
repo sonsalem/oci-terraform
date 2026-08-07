@@ -20,6 +20,7 @@ crash.*.log
 # Terraform CLI config that may contain credentials or registry tokens.
 .terraformrc
 terraform.rc
+terraform.tfvars
 
 # Saved plan files — a plan can embed sensitive variable values.
 *.tfplan
