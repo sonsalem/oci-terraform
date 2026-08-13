@@ -1,5 +1,7 @@
 # OCI Terraform — Week 1 Lab
 
+First week of the lab series — see the [repository root](../README.md) for the other weeks and the one-time setup.
+
 Terraform config for a small lab environment in Oracle Cloud Infrastructure: a VCN with internet access, one Oracle Linux 9 instance reachable over SSH, and a block volume attached to it.
 
 One `terraform apply` builds it, one `terraform destroy` removes it.
@@ -55,7 +57,7 @@ Two data sources look things up without creating anything: `oci_identity_availab
 ## File structure
 
 ```
-oci-terraform-week1/
+week1/
 ├── provider.tf                 # Terraform + OCI provider setup
 ├── variables.tf                # Input variables
 ├── network.tf                  # VCN, IGW, route table, security list, subnet
@@ -64,9 +66,11 @@ oci-terraform-week1/
 ├── moved.tf                    # Rename history, deletable after apply
 ├── terraform.tfvars            # Real values (gitignored)
 ├── terraform.tfvars.example    # Template
-├── .gitignore
+├── terraform.tfstate           # Local state (gitignored)
 └── .terraform.lock.hcl         # Locked provider versions (commit this)
 ```
+
+The `.gitignore` lives at the [repository root](../README.md) and covers every week.
 
 ## Variables
 
@@ -138,7 +142,7 @@ df -h /mnt/data
 
 ## What not to commit
 
-`terraform.tfvars` (real OCIDs), `*.tfstate` and backups (may contain sensitive values), and `.terraform/` (provider binaries). The `.gitignore` covers these, plus plan files and stray key material. Two deliberate exceptions: `!terraform.tfvars.example` is re-included, and `.terraform.lock.hcl` is committed so everyone gets the same provider versions.
+`terraform.tfvars` (real OCIDs), `*.tfstate` and backups (may contain sensitive values), and `.terraform/` (provider binaries). The root `.gitignore` covers these, plus plan files and stray key material. `terraform.tfvars.example` is safe and committed — the `*.tfvars` rule doesn't match it, since the filename ends in `.example`. `.terraform.lock.hcl` is committed on purpose, so everyone gets the same provider versions.
 
 Don't delete or hand-edit `terraform.tfstate` — without it Terraform loses track of what it built and `destroy` can't clean up.
 

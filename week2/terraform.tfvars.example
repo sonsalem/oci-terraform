@@ -1,0 +1,51 @@
+# Copy to terraform.tfvars and fill in your own values.
+# terraform.tfvars is gitignored; this template is not.
+
+# --- required -------------------------------------------------------------
+
+compartment_id = "ocid1.compartment.oc1..xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+ssh_public_key_path = "C:/path/to/your-key.pub"
+
+# --- naming and region ----------------------------------------------------
+
+lab_name   = "my-lab-w2"
+oci_region = "me-jeddah-1"
+
+# --- networking -----------------------------------------------------------
+
+vcn_cidr            = "10.0.0.0/16"
+public_subnet_cidr  = "10.0.1.0/24"
+private_subnet_cidr = "10.0.2.0/24"
+
+# Narrow this to "<your.public.ip>/32" for anything longer-lived than a lab.
+lb_allowed_cidrs = ["0.0.0.0/0"]
+
+# --- compute --------------------------------------------------------------
+
+instance_shape     = "VM.Standard.E5.Flex"
+instance_ocpus     = 1
+instance_memory_gb = 12
+
+# --- application and file storage ----------------------------------------
+
+app_name        = "OCI Terraform Week 2 Lab"
+app_port        = 8080
+app_mount_point = "/mnt/app"
+fss_export_path = "/app"
+
+# --- load balancer --------------------------------------------------------
+
+lb_shape              = "flexible"
+lb_min_bandwidth_mbps = 10
+lb_max_bandwidth_mbps = 10
+lb_listener_port      = 80
+
+# --- optional -------------------------------------------------------------
+
+# Bump if the AD you land in is out of capacity for the shape.
+# availability_domain_index = 0
+
+# freeform_tags = {
+#   Owner = "salem"
+# }
