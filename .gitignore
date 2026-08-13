@@ -15,12 +15,12 @@ crash.*.log
 # terraform.tfvars.example IS committed as a template — that one is excluded below.
 *.tfvars
 *.tfvars.json
-!terraform.tfvars.example
+
 
 # Terraform CLI config that may contain credentials or registry tokens.
 .terraformrc
 terraform.rc
-terraform.tfvars
+
 
 # Saved plan files — a plan can embed sensitive variable values.
 *.tfplan

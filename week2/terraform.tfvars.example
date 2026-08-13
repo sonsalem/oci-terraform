@@ -1,0 +1,7 @@
+lab_name = "my-lab"
+
+oci_region = "me-jeddah-1"
+
+compartment_id = "ocid1.compartment.oc1..xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+ssh_pubkey_file = "C:/path/to/your-key.pub"
