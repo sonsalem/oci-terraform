@@ -1,0 +1,22 @@
+# Copy this file to terraform.tfvars and fill in your own values.
+# terraform.tfvars is git-ignored.
+#
+# There are no credentials here: the OCI provider reads them from the profile
+# named by oci_config_profile inside ~/.oci/config (default "DEFAULT"), the same
+# way Weeks 1 and 2 authenticate.
+
+region             = "me-jeddah-1"
+oci_config_profile = "DEFAULT"
+
+compartment_id = "ocid1.compartment.oc1..xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+cluster_name = "week3-oke-lab"
+
+# Path to the PUBLIC half of your SSH key pair. Empty string skips node SSH access.
+ssh_public_key_path = "C:/path/to/your-key.pub"
+
+# Optional overrides
+node_pool_size     = 3
+node_shape         = "VM.Standard.E5.Flex"
+node_ocpus         = 2
+node_memory_in_gbs = 16

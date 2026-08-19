@@ -1,0 +1,13 @@
+# External Block Volume, provisioned on demand and attached to the pod.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: app-data-pvc
+  namespace: week3-lab
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: oci-bv-balanced
+  resources:
+    requests:
+      storage: 50Gi

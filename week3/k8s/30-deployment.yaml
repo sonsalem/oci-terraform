@@ -1,0 +1,55 @@
+# Demo application deployed on the OKE cluster, with the block volume
+# mounted at /usr/share/nginx/html/data so writes persist across pod
+# restarts / reschedules.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: week3-app
+  namespace: week3-lab
+  labels:
+    app: week3-app
+spec:
+  # NOTE: OCI Block Volume is ReadWriteOnce - it can only be attached to a
+  # single node at a time, so this Deployment must stay at 1 replica. Scale
+  # via multiple pods reading a shared volume is not possible here; use
+  # File Storage Service (NFS, ReadWriteMany) instead if you need that.
+  replicas: 1
+  strategy:
+    type: Recreate # ensures the old pod releases the volume before the new one attaches it
+  selector:
+    matchLabels:
+      app: week3-app
+  template:
+    metadata:
+      labels:
+        app: week3-app
+    spec:
+      containers:
+        - name: web
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: app-data
+              mountPath: /usr/share/nginx/html/data
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+      volumes:
+        - name: app-data
+          persistentVolumeClaim:
+            claimName: app-data-pvc

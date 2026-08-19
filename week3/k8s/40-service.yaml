@@ -1,0 +1,20 @@
+# Exposes the app externally through an OCI Load Balancer.
+apiVersion: v1
+kind: Service
+metadata:
+  name: week3-app-lb
+  namespace: week3-lab
+  annotations:
+    oci.oraclecloud.com/load-balancer-type: "lb" # flexible OCI Load Balancer (use "nlb" for Network Load Balancer)
+    service.beta.kubernetes.io/oci-load-balancer-shape: "flexible"
+    service.beta.kubernetes.io/oci-load-balancer-shape-flex-min: "10"
+    service.beta.kubernetes.io/oci-load-balancer-shape-flex-max: "100"
+spec:
+  type: LoadBalancer
+  selector:
+    app: week3-app
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
