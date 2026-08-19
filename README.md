@@ -2,7 +2,9 @@
 
 Weekly Terraform labs for an Oracle Cloud Infrastructure course.
 
-Each week is a **self-contained Terraform root module**: its own `provider.tf`, variables, state file, and provider lock. You `init`, `apply`, and `destroy` one week without touching the others, and a broken week never takes the rest down with it.
+Each week is a **self-contained Terraform root module**: its own provider config, variables, state file, and provider lock. You `init`, `apply`, and `destroy` one week without touching the others, and a broken week never takes the rest down with it.
+
+Weeks 1 and 2 are flat — every resource sits in the root. Week 3 introduces **child modules** under `week3/modules/`, since the assignment asked for reusable ones.
 
 > The repository is named `oci-terraform-week1` for historical reasons — it holds every week, not just the first.
 
@@ -12,16 +14,16 @@ Each week is a **self-contained Terraform root module**: its own `provider.tf`, 
 |------|--------|----------------|--------|
 | 1 | [week1/](week1/) | VCN with internet access, one Oracle Linux 9 instance over SSH, 50 GB block volume attached | Complete |
 | 2 | [week2/](week2/) | VCN with public + private subnets, Application Load Balancer in front of a private instance, app files on File Storage over NFS | Complete |
-| 3 | — | — | Not added yet |
+| 3 | [week3/](week3/) | OKE cluster with VCN-native pod networking, 3-node managed pool, nginx on a block-volume PVC behind a Kubernetes-provisioned load balancer | Complete |
 | 4 | — | — | Not added yet |
 
-Weeks 3 and 4 have no folder in the repo yet. When they land, they follow the same layout: one directory, one root module, one README.
+Week 4 has no folder yet. When it lands it follows the same layout: one directory, one root module, one README.
 
 ## Shared setup
 
 Do this once — it applies to every week.
 
-1. **Terraform ≥ 1.3.0** (labs tested with v1.15.8 and OCI provider v7.32.0)
+1. **Terraform ≥ 1.3.0** — week 3 needs **≥ 1.5.0** (labs tested with v1.15.8, OCI provider v7.32.0 for weeks 1–2 and v8.23.0 for week 3)
 2. **An OCI account** with permission to create networking and compute in your target compartment
 3. **`~/.oci/config`** with a `DEFAULT` profile:
    ```ini
@@ -38,6 +40,8 @@ Do this once — it applies to every week.
    ssh-keygen -t rsa -b 4096 -f C:/salem-oci/oci-lab-key
    ```
 
+Week 3 also needs the **OCI CLI** and **kubectl** — Terraform builds the cluster, but you fetch the kubeconfig and deploy the app yourself.
+
 Credentials live in `~/.oci/config`, never in this repo. No OCIDs or key material appear in any `.tf` file.
 
 ## Running any week
@@ -53,12 +57,14 @@ terraform fmt
 terraform plan
 terraform apply
 
-terraform output ssh_connection_command
+terraform output                      # week-specific: SSH command, app URL, kubeconfig command
 
 terraform destroy                     # stops billing
 ```
 
 Every week reads its own `terraform.tfvars` automatically. Anything you leave unset falls back to the default in that week's `variables.tf`.
+
+Week 3 doesn't finish at `apply` — the cluster comes up empty. Fetch the kubeconfig with the printed `get_kubeconfig_command`, then apply `week3/k8s/` in filename order to get the app running. Delete the Kubernetes Service **before** `terraform destroy`, or the load balancer it created outlives the state file and has to be removed by hand.
 
 **Run `terraform destroy` when you finish a lab.** The default shape is a paid one; an instance left running bills by the hour.
 
@@ -79,20 +85,30 @@ oci-terraform-week1/
 │   ├── terraform.tfvars.example # template
 │   ├── terraform.tfvars         # real values (gitignored)
 │   └── .terraform.lock.hcl      # locked provider versions (committed)
-└── week2/
-    ├── README.md                # week 2 walkthrough
-    ├── provider.tf              # same idea, split further as the stack grew
+├── week2/
+│   ├── README.md                # week 2 walkthrough
+│   ├── provider.tf              # same idea, split further as the stack grew
+│   ├── variables.tf
+│   ├── locals.tf                # names, constants, derived values
+│   ├── data.tf                  # AD, image and mount-target IP lookups
+│   ├── network.tf               # VCN, gateways, route tables, security lists, subnets
+│   ├── compute.tf               # the private application instance
+│   ├── fss.tf                   # File Storage: file system, mount target, export
+│   ├── loadbalancer.tf          # load balancer, backend set, backend, listener
+│   ├── outputs.tf
+│   ├── templates/               # cloud-init first-boot script
+│   ├── docs/                    # architecture diagram + screenshots
+│   └── ...
+└── week3/
+    ├── README.md                # week 3 walkthrough
+    ├── providers.tf             # note the plural — same job as provider.tf above
     ├── variables.tf
-    ├── locals.tf                # names, constants, derived values
-    ├── data.tf                  # AD, image and mount-target IP lookups
-    ├── network.tf               # VCN, gateways, route tables, security lists, subnets
-    ├── compute.tf               # the private application instance
-    ├── fss.tf                   # File Storage: file system, mount target, export
-    ├── loadbalancer.tf          # load balancer, backend set, backend, listener
+    ├── main.tf                  # VCN, gateways, log group, then calls both modules
     ├── outputs.tf
-    ├── templates/               # cloud-init first-boot script
-    ├── docs/                    # architecture diagram + screenshots
-    └── ...
+    ├── modules/
+    │   ├── subnet/              # route table + security list + subnet + flow log
+    │   └── oke/                 # cluster + managed node pool
+    └── k8s/                     # namespace, storage class, PVC, deployment, service
 ```
 
 The `.gitignore` sits at the root and applies to every week, so a new week folder is protected the moment you create it.
@@ -105,7 +121,7 @@ State is per-directory. Keeping the weeks separate means:
 - You can destroy an old week and keep a newer one running.
 - Each week pins its own provider version in `.terraform.lock.hcl`.
 
-The cost is duplication — shared code is copied, not factored into a module. That's deliberate for a teaching repo: each week reads top to bottom on its own.
+The cost is duplication — shared code is copied, not factored into a module. That's deliberate for a teaching repo: each week reads top to bottom on its own. Week 3's modules are reused *within* week 3 (the subnet module runs four times), not shared across weeks.
 
 ## What not to commit
 
