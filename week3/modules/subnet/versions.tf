@@ -1,10 +1,4 @@
-############################################
-# modules/subnet/versions.tf
-# A reusable module declares the providers it
-# needs itself, so it can be consumed by any
-# root configuration without relying on that
-# root's provider block being compatible.
-############################################
+# Declared here too, so the module works in any root config.
 
 terraform {
   required_version = ">= 1.5.0"

@@ -1,11 +1,3 @@
-############################################
-# modules/subnet/variables.tf
-# Generic, reusable Subnet module inputs.
-# Nothing here is hardcoded to a specific
-# environment - everything comes from the
-# root configuration.
-############################################
-
 variable "compartment_id" {
   description = "OCID of the compartment where the subnet resources will be created"
   type        = string
@@ -37,8 +29,7 @@ variable "prohibit_public_ip_on_vnic" {
   default     = true
 }
 
-# ---------------- Route Table ----------------
-
+# Route table
 variable "route_rules" {
   description = "List of route rules to attach to the subnet's route table"
   type = list(object({
@@ -50,8 +41,7 @@ variable "route_rules" {
   default = []
 }
 
-# ---------------- Security List ----------------
-
+# Security list
 variable "ingress_rules" {
   description = "List of ingress security rules for the subnet's security list"
   type = list(object({
@@ -84,8 +74,7 @@ variable "egress_rules" {
   default = []
 }
 
-# ---------------- Flow Logs (Enable Logs) ----------------
-
+# Flow logs
 variable "enable_flow_logs" {
   description = "Whether to enable VCN Flow Logs for this subnet"
   type        = bool

@@ -1,16 +1,4 @@
-############################################
-# modules/oke/main.tf
-#
-# Creates an OKE cluster + a managed worker
-# node pool with VCN-native pod networking.
-# Fully driven by variables - no hardcoded
-# values - so the module can be reused for
-# dev/staging/prod by simply changing the
-# root configuration's inputs.
-############################################
-
-# ---------------- Cluster ----------------
-
+# Cluster
 resource "oci_containerengine_cluster" "this" {
   compartment_id     = var.compartment_id
   name               = var.cluster_name
@@ -24,9 +12,8 @@ resource "oci_containerengine_cluster" "this" {
     subnet_id            = var.api_endpoint_subnet_id
   }
 
-  # The cluster must advertise the same CNI the node pool asks for. Omitting
-  # this silently defaults the cluster to FLANNEL_OVERLAY, which then rejects a
-  # VCN-native node pool with "pod network options didn't match".
+  # Must match the node pool's CNI. Leave it out and the cluster quietly
+  # defaults to flannel, then refuses the node pool.
   cluster_pod_network_options {
     cni_type = var.cni_type
   }
@@ -34,8 +21,7 @@ resource "oci_containerengine_cluster" "this" {
   options {
     service_lb_subnet_ids = var.service_lb_subnet_ids
 
-    # Conditional expression: only relevant for the overlay CNI.
-    # For OCI_VCN_IP_NATIVE, pods get real VCN IPs from the pod subnet instead.
+    # pods_cidr is a flannel thing. VCN-native pods get real IPs from the pod subnet.
     kubernetes_network_config {
       pods_cidr     = var.cni_type == "FLANNEL_OVERLAY" ? var.pods_cidr : null
       services_cidr = var.services_cidr
@@ -48,8 +34,7 @@ resource "oci_containerengine_cluster" "this" {
   }
 }
 
-# ---------------- Managed Worker Node Pool ----------------
-
+# Node pool
 resource "oci_containerengine_node_pool" "this" {
   cluster_id         = oci_containerengine_cluster.this.id
   compartment_id     = var.compartment_id
@@ -58,8 +43,7 @@ resource "oci_containerengine_node_pool" "this" {
   node_shape         = var.node_shape
   freeform_tags      = var.freeform_tags
 
-  # Conditional block: flex-shape sizing is only supplied when a
-  # *.Flex shape is used, matching how OCI's own API behaves.
+  # Only .Flex shapes accept a size.
   dynamic "node_shape_config" {
     for_each = length(regexall("Flex", var.node_shape)) > 0 ? [1] : []
     content {
@@ -79,7 +63,7 @@ resource "oci_containerengine_node_pool" "this" {
   node_config_details {
     size = var.node_pool_size
 
-    # Dynamic block: spread nodes across every AD passed in.
+    # One entry per AD, so the nodes spread across the region.
     dynamic "placement_configs" {
       for_each = var.availability_domains
       content {
@@ -90,8 +74,7 @@ resource "oci_containerengine_node_pool" "this" {
 
     nsg_ids = var.worker_nsg_ids
 
-    # VCN-native pod networking configuration.
-    # Only created when cni_type = OCI_VCN_IP_NATIVE (conditional block).
+    # Pods get their own VNICs in the pod subnet.
     dynamic "node_pool_pod_network_option_details" {
       for_each = var.cni_type == "OCI_VCN_IP_NATIVE" ? [1] : []
       content {

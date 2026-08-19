@@ -1,14 +1,4 @@
-############################################
-# Root variables.tf
-# All environment-specific values live here
-# or in terraform.tfvars - never inside the
-# modules themselves.
-############################################
-
-# ---------------- Auth (OCI provider) ----------------
-#
-# Credentials come from ~/.oci/config, exactly as in Weeks 1 and 2 — no OCIDs,
-# fingerprints or key paths are duplicated into this repo.
+# Auth — the provider reads the real credentials from ~/.oci/config.
 
 variable "oci_config_profile" {
   description = "Profile inside ~/.oci/config used for authentication"
@@ -27,8 +17,7 @@ variable "compartment_id" {
   type        = string
 }
 
-# ---------------- Networking ----------------
-
+# Networking
 variable "vcn_cidr_block" {
   type    = string
   default = "10.0.0.0/16"
@@ -65,8 +54,7 @@ variable "enable_flow_logs" {
   default = true
 }
 
-# ---------------- OKE ----------------
-
+# OKE
 variable "cluster_name" {
   type    = string
   default = "week3-oke-lab"

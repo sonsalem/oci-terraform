@@ -1,6 +1,3 @@
-# Demo application deployed on the OKE cluster, with the block volume
-# mounted at /usr/share/nginx/html/data so writes persist across pod
-# restarts / reschedules.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -9,13 +6,11 @@ metadata:
   labels:
     app: week3-app
 spec:
-  # NOTE: OCI Block Volume is ReadWriteOnce - it can only be attached to a
-  # single node at a time, so this Deployment must stay at 1 replica. Scale
-  # via multiple pods reading a shared volume is not possible here; use
-  # File Storage Service (NFS, ReadWriteMany) instead if you need that.
+  # A block volume attaches to one node at a time, so this stays at 1 replica.
+  # If you need several pods sharing the files, that's File Storage, not block.
   replicas: 1
   strategy:
-    type: Recreate # ensures the old pod releases the volume before the new one attaches it
+    type: Recreate # old pod has to release the volume before the new one gets it
   selector:
     matchLabels:
       app: week3-app

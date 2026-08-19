@@ -1,21 +1,8 @@
-############################################
-# Root main.tf
-# Wires the reusable Subnet and OKE modules
-# together to build the Week 3 lab:
-#   - VCN + gateways
-#   - 4x subnets via the subnet module
-#     (endpoint / workers / pods / LB)
-#   - OKE cluster + managed node pool with
-#     VCN-native pod networking via the OKE
-#     module
-############################################
-
 data "oci_identity_availability_domains" "ads" {
   compartment_id = var.compartment_id
 }
 
-# ---------------- VCN ----------------
-
+# VCN
 resource "oci_core_vcn" "this" {
   compartment_id = var.compartment_id
   cidr_blocks    = [var.vcn_cidr_block]
@@ -55,15 +42,13 @@ data "oci_core_services" "all_services" {
   }
 }
 
-# ---------------- Logging (used by subnet module flow logs) ----------------
-
+# Every subnet's flow log writes into this one group.
 resource "oci_logging_log_group" "this" {
   compartment_id = var.compartment_id
   display_name   = "${var.cluster_name}-log-group"
 }
 
-# ---------------- Subnets (Subnet module x4) ----------------
-
+# Subnets
 module "endpoint_subnet" {
   source = "./modules/subnet"
 
@@ -197,11 +182,8 @@ module "lb_subnet" {
   ]
 }
 
-# ---------------- Kubernetes version ----------------
-
-# The provider requires a concrete version, so "leave it null for the latest"
-# is resolved here against what OKE actually offers in this region rather than
-# being hardcoded and going stale.
+# Kubernetes version
+# The provider wants a real version string, so null means "newest OKE offers here".
 data "oci_containerengine_cluster_option" "this" {
   cluster_option_id = "all"
   compartment_id    = var.compartment_id
@@ -216,17 +198,16 @@ locals {
   )
 }
 
-# ---------------- Node pool image (latest available for the shape) ----------------
-
+# Node pool image
 data "oci_containerengine_node_pool_option" "this" {
   node_pool_option_id = "all"
   compartment_id      = var.compartment_id
 }
 
 locals {
-  # An OKE worker image is tied to a Kubernetes version, so it has to match the
-  # version the cluster is created with. aarch64 and GPU images are excluded so
-  # an x86 shape like VM.Standard.E5.Flex never gets an incompatible image.
+  # Worker images are tied to a k8s version, so it has to match the cluster.
+  # aarch64 and GPU images are filtered out or an x86 shape gets an image it
+  # can't boot.
   node_image_candidates = [
     for source in data.oci_containerengine_node_pool_option.this.sources :
     source.image_id
@@ -237,8 +218,7 @@ locals {
   node_image_id = local.node_image_candidates[0]
 }
 
-# ---------------- OKE module ----------------
-
+# Cluster
 module "oke" {
   source = "./modules/oke"
 

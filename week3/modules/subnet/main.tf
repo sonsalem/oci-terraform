@@ -1,20 +1,4 @@
-############################################
-# modules/subnet/main.tf
-#
-# Creates the 4 resources requested for the
-# Subnet module:
-#   1. Route Table
-#   2. Security List
-#   3. Subnet
-#   4. "Enable Logs" -> VCN Flow Log (conditional)
-#
-# Uses dynamic blocks for route rules and
-# security rules so the module stays generic -
-# callers decide the actual rules via variables.
-############################################
-
-# ---------------- 1. Route Table ----------------
-
+# Route table
 resource "oci_core_route_table" "this" {
   compartment_id = var.compartment_id
   vcn_id         = var.vcn_id
@@ -32,8 +16,7 @@ resource "oci_core_route_table" "this" {
   }
 }
 
-# ---------------- 2. Security List ----------------
-
+# Security list
 resource "oci_core_security_list" "this" {
   compartment_id = var.compartment_id
   vcn_id         = var.vcn_id
@@ -79,8 +62,7 @@ resource "oci_core_security_list" "this" {
   }
 }
 
-# ---------------- 3. Subnet ----------------
-
+# Subnet
 resource "oci_core_subnet" "this" {
   compartment_id             = var.compartment_id
   vcn_id                     = var.vcn_id
@@ -93,9 +75,7 @@ resource "oci_core_subnet" "this" {
   freeform_tags              = var.freeform_tags
 }
 
-# ---------------- 4. Enable Logs (VCN Flow Log) ----------------
-# Conditional expression: only created when enable_flow_logs = true.
-# This is the "conditional resource creation via count" pattern.
+# Flow log
 
 resource "oci_logging_log" "flow_log" {
   count = var.enable_flow_logs ? 1 : 0

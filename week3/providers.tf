@@ -9,9 +9,7 @@ terraform {
   }
 }
 
-# Credentials are read from ~/.oci/config, never from this repo — same pattern as
-# Weeks 1 and 2. The profile and region are variables so the same code can target
-# another tenancy or region.
+# Credentials come from ~/.oci/config, never from this repo — same as weeks 1 and 2.
 provider "oci" {
   config_file_profile = var.oci_config_profile
   region              = var.region

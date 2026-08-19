@@ -1,6 +1,4 @@
-# OKE ships a default "oci-bv" StorageClass backed by the OCI Block
-# Volume CSI driver. This custom one is provided in case you want to
-# control the volume performance tier explicitly (Balanced here).
+# OKE already ships an "oci-bv" class. This one just pins the performance tier.
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
@@ -9,4 +7,4 @@ provisioner: blockvolume.csi.oraclecloud.com
 volumeBindingMode: WaitForFirstConsumer
 reclaimPolicy: Delete
 parameters:
-  vpusPerGB: "10" # 10 = Balanced, 0 = Lower Cost, 20 = Higher Performance
+  vpusPerGB: "10" # 0 = lower cost, 10 = balanced, 20 = higher performance

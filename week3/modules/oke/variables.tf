@@ -1,8 +1,3 @@
-############################################
-# modules/oke/variables.tf
-# Generic, reusable OKE module inputs.
-############################################
-
 variable "compartment_id" {
   type = string
 }
@@ -28,8 +23,7 @@ variable "cluster_type" {
   default     = "BASIC_CLUSTER"
 }
 
-# ---------------- Networking ----------------
-
+# Networking
 variable "api_endpoint_subnet_id" {
   description = "Subnet OCID for the Kubernetes API endpoint"
   type        = string
@@ -56,8 +50,7 @@ variable "services_cidr" {
   default = "10.96.0.0/16"
 }
 
-# ---------------- Node Pool / Pod networking ----------------
-
+# Node pool and pod networking
 variable "cni_type" {
   description = "OCI_VCN_IP_NATIVE (VCN-native pod networking) or FLANNEL_OVERLAY"
   type        = string
